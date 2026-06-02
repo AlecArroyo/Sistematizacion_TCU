@@ -7,19 +7,22 @@ import Step4 from "./components/Step4"
 import Step5 from "./components/Step5"
 import Step6 from "./components/Step6"
 import Step7 from "./components/Step7"
+import Step8 from "./components/Step8"
+import { crearSistematizacion } from "./services/api"
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({})
-  const [submitted, setSubmitted] = useState(false)
   const [payload, setPayload] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
 
   function handleNext(data) {
     setFormData(prev => ({ ...prev, ...data }))
     setCurrentStep(prev => prev + 1)
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const structuredPayload = {
       nombre: formData.nombre || "",
       comunidad: formData.comunidad || "",
@@ -47,29 +50,23 @@ export default function App() {
       },
       notas: formData.notes || ""
     }
+    setIsSubmitting(true)
+    setSubmitError(null)
     setPayload(structuredPayload)
-    setSubmitted(true)
-    console.log("Datos enviados:", structuredPayload)
+    try {
+      const response = await crearSistematizacion(structuredPayload)
+      setPayload(response)
+      setCurrentStep(8)
+      console.log("Datos enviados:", response)
+    } catch (error) {
+      const message = error?.response?.data?.message || error?.message || "Error al enviar la sistematización"
+      setSubmitError(message)
+      console.error("Error enviando datos:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl border border-gray-200 p-10 w-full max-w-xl text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sky-500 text-white mb-6">
-            ✓
-          </div>
-          <h1 className="text-3xl font-semibold text-gray-900 mb-4">Enviado con éxito</h1>
-          <p className="text-sm text-gray-600 mb-8">
-            La sistematización ha sido registrada. Gracias por la información.
-          </p>
-          <pre className="text-left text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-2xl p-4 overflow-x-auto">
-            {JSON.stringify(payload || formData, null, 2)}
-          </pre>
-        </div>
-      </div>
-    )
-  }
 
   function handleBack() {
     setCurrentStep(prev => Math.max(0, prev - 1))
@@ -99,7 +96,18 @@ export default function App() {
         <Step6 currentStep={currentStep} totalSteps={8} onNext={handleNext} onBack={handleBack} />
       )}
       {currentStep === 7 && (
-        <Step7 currentStep={currentStep} totalSteps={8} formData={formData} onBack={handleBack} onSubmit={handleSubmit} />
+        <Step7
+          currentStep={currentStep}
+          totalSteps={8}
+          formData={formData}
+          onBack={handleBack}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          submitError={submitError}
+        />
+      )}
+      {currentStep === 8 && (
+        <Step8 currentStep={currentStep} totalSteps={8} onBack={handleBack} />
       )}
     </div>
   )

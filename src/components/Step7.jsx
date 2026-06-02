@@ -1,7 +1,7 @@
 ﻿import StepBar from "./StepBar"
 import FadeSection from "./FadeSection"
 
-export default function Step7({ currentStep, totalSteps, onBack, onSubmit, formData }) {
+export default function Step7({ currentStep, totalSteps, onBack, onSubmit, formData, isSubmitting, submitError }) {
   const {
     nombre,
     responsable,
@@ -118,11 +118,22 @@ export default function Step7({ currentStep, totalSteps, onBack, onSubmit, formD
         </button>
         <button
           onClick={onSubmit}
-          className="bg-sky-400 hover:bg-sky-500 text-white text-[14px] font-semibold px-7 py-3 rounded-full transition"
+          disabled={isSubmitting}
+          className={`bg-sky-400 text-white text-[14px] font-semibold px-7 py-3 rounded-full transition ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-sky-500'}`}
         >
-          Continuar
+          {isSubmitting ? (
+            <span className="flex items-center gap-2 justify-center">
+              <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              Enviando...
+            </span>
+          ) : (
+            'Enviar'
+          )}
         </button>
       </div>
+      {submitError && (
+        <p className="text-sm text-red-600 mt-4 text-center">{submitError}</p>
+      )}
 
       </FadeSection>
 
