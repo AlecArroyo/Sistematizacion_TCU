@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
 import Step0 from "./components/Step0"
 import Step1 from "./components/Step1"
 import Step2 from "./components/Step2"
@@ -9,8 +10,20 @@ import Step6 from "./components/Step6"
 import Step7 from "./components/Step7"
 import Step8 from "./components/Step8"
 import { crearSistematizacion } from "./services/api"
+import Dashboard from "./pages/Dashboard"
 
 export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<StepsForm />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+function StepsForm() {
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({})
   const [payload, setPayload] = useState(null)
@@ -74,6 +87,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-cyan-100 flex items-center font-google justify-center p-4">
+      <div className="w-full max-w-4xl absolute top-4 right-4">
+        <div className="flex justify-end">
+          <Link to="/dashboard" className="text-sky-600 hover:underline">Ir al Dashboard</Link>
+        </div>
+      </div>
       {currentStep === 0 && (
         <Step0 currentStep={currentStep} totalSteps={8} onNext={handleNext} />
       )}
