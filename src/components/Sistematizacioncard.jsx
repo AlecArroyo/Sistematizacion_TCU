@@ -60,7 +60,7 @@ export default function SistematizacionCard({
       onClick={onClick}
       className={[
         "relative bg-white rounded-2xl border cursor-pointer select-none",
-        "transition-all duration-200 hover:shadow-md active:scale-[0.985]",
+        "transition-all duration-200  hover:bg-neutral-100 active:scale-[0.985]",
         "p-5 flex flex-col gap-3",
         isSelected
           ? "border-sky-400 ring-2 ring-sky-200 shadow-sm"
