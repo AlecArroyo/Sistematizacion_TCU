@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import FadeSection from "../components/FadeSection"
-import StepBar from "../components/StepBar"
+import SistematizacionCard from "../components/Sistematizacioncard"
 import { getSistematizaciones } from "../services/api"
+
+const PAGE_SIZE = 6
 
 export default function Dashboard() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedIndex, setSelectedIndex] = useState(null)
+  const [activeTab, setActiveTab] = useState("sistematizaciones")
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(0)
 
   useEffect(() => {
     let mounted = true
@@ -19,7 +23,6 @@ export default function Dashboard() {
         const data = await getSistematizaciones()
         if (!mounted) return
         setItems(Array.isArray(data) ? data : [])
-        setSelectedIndex(0)
       } catch (err) {
         setError(err?.message || "Error cargando sistematizaciones")
       } finally {
@@ -30,91 +33,171 @@ export default function Dashboard() {
     return () => (mounted = false)
   }, [])
 
-  const selected = items[selectedIndex]
+  function handlePrint(item) {
+    window.print()
+  }
+
+  const filtered = items.filter(it => {
+    if (!search.trim()) return true
+    const q = search.toLowerCase()
+    return (
+      it.actividad?.toLowerCase().includes(q) ||
+      it.nombre?.toLowerCase().includes(q) ||
+      it.comunidad?.toLowerCase().includes(q)
+    )
+  })
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
+
+  // Reset page when search changes
+  function handleSearch(e) {
+    setSearch(e.target.value)
+    setPage(0)
+  }
 
   return (
-    <div className="min-h-screen bg-cyan-100 flex flex-col items-center font-google p-6">
-      <div className="w-full max-w-4xl">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold">Dashboard — Sistematizaciones</h1>
-          <Link to="/" className="text-sky-600 hover:underline">Volver al formulario</Link>
+    <div className="min-h-screen bg-cyan-50 flex flex-col items-center font-google p-4 md:p-6">
+      <div className="w-full max-w-5xl">
+
+        {/* Encabezado */}
+        <div className="mb-6 pt-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-normal text-gray-800 mb-2">
+              ¡Hola <span className="text-sky-500">TCU-782</span>!
+            </h1>
+            <p className="text-gray-500 text-lg">
+              Aqui podrás ver e imprimir todas las sistematizaciones del tcu
+            </p>
+          </div>
+
+          <div className="mt-2">
+            <Link to="/" className="inline-flex items-center gap-2 text-sm text-sky-600 hover:underline">
+              ← Volver al formulario
+            </Link>
+          </div>
         </div>
 
-        <FadeSection className="mb-4">
-          <div className="bg-white rounded-lg p-4 shadow">
-            {loading ? (
-              <p>Cargando sistematizaciones...</p>
-            ) : error ? (
-              <p className="text-red-600">{error}</p>
-            ) : items.length === 0 ? (
-              <p>No hay sistematizaciones disponibles.</p>
-            ) : (
-              <div>
-                <div className="flex items-center gap-4 mb-3">
-                  <StepBar currentStep={selectedIndex} totalSteps={items.length} />
-                  <div className="text-sm text-gray-600">{selectedIndex + 1} / {items.length}</div>
-                </div>
+        {/* Rectángulo blanco */}
+        <div className="bg-white rounded-2xl shadow p-6 border border-gray-200">
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {items.map((it, i) => (
-                    <button
-                      key={it.id || i}
-                      onClick={() => setSelectedIndex(i)}
-                      className={`text-left p-3 rounded border transition-shadow duration-150 bg-gray-50 hover:shadow-md ${i === selectedIndex ? "ring-2 ring-sky-300" : ""}`}
-                    >
-                      <div className="font-medium">{it.nombre || "Sin nombre"}</div>
-                      <div className="text-xs text-gray-500">{it.comunidad || "Sin comunidad"}</div>
-                      <div className="text-xs text-gray-400 mt-1">{it.fecha || "Sin fecha"}</div>
-                    </button>
-                  ))}
-                </div>
+          {/* Fila superior: tabs + buscador */}
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-5">
+            <div className="flex gap-4 flex-wrap">
+              <button
+                onClick={() => setActiveTab("sistematizaciones")}
+                className={`text-md font-medium pb-2 transition-all ${
+                  activeTab === "sistematizaciones"
+                    ? "text-green-700 border-b-2 border-green-700"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                Sistematizaciones
+                <span className="ml-2 bg-gray-100 text-gray-500 text-sm font-semibold px-2 py-0.5 rounded-full">
+                  {items.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab("estadisticas")}
+                className={`text-md font-medium pb-1 transition-all ${
+                  activeTab === "estadisticas"
+                    ? "text-green-700 border-b-2 border-green-700"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                Estadísticas
+              </button>
+            </div>
 
-                {selected && (
-                  <div className="mt-4 bg-white p-4 rounded shadow">
-                    <h2 className="text-lg font-semibold mb-2">Detalles</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
-                      <div><strong>Actividad:</strong> {selected.actividad || "-"}</div>
-                      <div><strong>Horas:</strong> {selected.horas ?? "-"}</div>
-                      <div><strong>Participantes:</strong> {selected.participantes ?? "-"}</div>
-                      <div><strong>Comunidad:</strong> {selected.comunidad || "-"}</div>
-                      <div className="md:col-span-2"><strong>Notas:</strong> {selected.notas || "-"}</div>
-                    </div>
-
-                    <div className="mt-3">
-                      <h3 className="font-medium">Audios / Videos</h3>
-                      <div className="text-sm text-gray-600">
-                        {selected.audiosVideos?.items?.length > 0 ? (
-                          <ul className="list-disc pl-5">
-                            {selected.audiosVideos.items.map((m, idx) => (
-                              <li key={idx}>{m.titulo} — {m.propietario}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="text-xs">No hay medios registrados</div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="mt-3">
-                      <h3 className="font-medium">Consentimientos</h3>
-                      <div className="text-sm text-gray-600">
-                        {selected.consentimientos?.personas?.length > 0 ? (
-                          <ul className="list-disc pl-5">
-                            {selected.consentimientos.personas.map((c, idx) => (
-                              <li key={idx}>{c.nombre} — {c.cantidad}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="text-xs">No hay consentimientos registrados</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="w-full md:flex-1">
+              <input
+                type="text"
+                placeholder="Buscar actividad..."
+                value={search}
+                onChange={handleSearch}
+                className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-green-200"
+              />
+            </div>
           </div>
-        </FadeSection>
+
+          {/* Fila de filtros */}
+          <div className="flex items-center gap-2 mb-6 flex-wrap sm:flex-nowrap overflow-x-auto">
+            <button className="shrink-0 flex items-center gap-1 bg-green-800 text-white text-xs font-medium px-4 py-1.5 rounded-full">
+              Nuevos <span>▾</span>
+            </button>
+            <button className="shrink-0 flex items-center gap-1 border border-gray-300 text-gray-600 text-xs font-medium px-4 py-1.5 rounded-full">
+              Fecha de publicacion <span>▾</span>
+            </button>
+            <button className="shrink-0 border border-gray-300 text-gray-600 text-xs font-medium px-4 py-1.5 rounded-full">
+              Solicitud Sencilla
+            </button>
+          </div>
+
+          {/* Área de cards */}
+          {loading ? (
+            <p className="text-sm text-gray-400 py-16 text-center">Cargando sistematizaciones...</p>
+          ) : error ? (
+            <p className="text-sm text-red-500 py-16 text-center">{error}</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-sm text-gray-400 py-16 text-center">No hay sistematizaciones disponibles.</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {paginated.map((it, i) => {
+                  const globalIndex = page * PAGE_SIZE + i
+                  return (
+                    <SistematizacionCard
+                      key={it._id || it.id || i}
+                      item={it}
+                      isSelected={globalIndex === selectedIndex}
+                      onClick={() => setSelectedIndex(globalIndex)}
+                      onPrint={handlePrint}
+                    />
+                  )
+                })}
+              </div>
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-6 pt-4 border-t border-gray-100 gap-3">
+                  <span className="text-xs text-gray-400">
+                    Mostrando {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} de {filtered.length}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setPage(p => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                      className="px-3 py-1 text-xs rounded-full border border-gray-200 text-gray-500 disabled:opacity-30 hover:bg-gray-50 transition"
+                    >
+                      ← Anterior
+                    </button>
+                    {Array.from({ length: totalPages }, (_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setPage(idx)}
+                        className={`w-8 h-8 text-sm rounded-full border transition ${
+                          idx === page
+                            ? "bg-green-800 text-white border-green-800"
+                            : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                        }`}
+                      >
+                        {idx + 1}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                      disabled={page === totalPages - 1}
+                      className="px-3 py-1 text-xs rounded-full border border-gray-200 text-gray-500 disabled:opacity-30 hover:bg-gray-50 transition"
+                    >
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+        </div>
       </div>
     </div>
   )
