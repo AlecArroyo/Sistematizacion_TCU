@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import SistematizacionCard from "../components/Sistematizacioncard"
+import Stats from "../components/Stats"
 import { getSistematizaciones } from "../services/api"
+import FadeSection from "../components/FadeSection"
+
 
 const PAGE_SIZE = 6
 
@@ -13,6 +16,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("sistematizaciones")
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(0)
+  const [orderBy, setOrderBy] = useState("recientes")
 
   useEffect(() => {
     let mounted = true
@@ -47,8 +51,33 @@ export default function Dashboard() {
     )
   })
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
-  const paginated = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
+  // Ordenamiento
+  function getDateValue(it) {
+    const keys = ["fecha", "fechaPublicacion", "createdAt", "created_at", "fecha_publicacion"]
+    for (const k of keys) {
+      if (it[k]) return new Date(it[k]).getTime() || 0
+    }
+    return 0
+  }
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (orderBy === "recientes") {
+      return getDateValue(b) - getDateValue(a)
+    }
+    if (orderBy === "antiguos") {
+      return getDateValue(a) - getDateValue(b)
+    }
+    if (orderBy === "nombre") {
+      return (a.nombre || "").localeCompare(b.nombre || "")
+    }
+    if (orderBy === "actividad") {
+      return (a.actividad || "").localeCompare(b.actividad || "")
+    }
+    return 0
+  })
+
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
+  const paginated = sorted.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
 
   // Reset page when search changes
   function handleSearch(e) {
@@ -57,7 +86,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-cyan-50 flex flex-col items-center font-google p-4 md:p-6">
+    <div className="min-h-screen bg-cyan-50 flex flex-col items-center font-google p-6 md:p-10">
       <div className="w-full max-w-5xl">
 
         {/* Encabezado */}
@@ -83,7 +112,7 @@ export default function Dashboard() {
 
           {/* Fila superior: tabs + buscador */}
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-5">
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-8 flex-wrap">
               <button
                 onClick={() => setActiveTab("sistematizaciones")}
                 className={`text-md font-medium pb-2 transition-all ${
@@ -99,7 +128,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("estadisticas")}
-                className={`text-md font-medium pb-1 transition-all ${
+                className={`text-md font-medium pb-1 transition-all mx-1.5 ${
                   activeTab === "estadisticas"
                     ? "text-green-700 border-b-2 border-green-700"
                     : "text-gray-400 hover:text-gray-600"
@@ -120,29 +149,36 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Fila de filtros */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap sm:flex-nowrap overflow-x-auto">
-            <button className="shrink-0 flex items-center gap-1 bg-green-800 text-white text-xs font-medium px-4 py-1.5 rounded-full">
-              Nuevos <span>▾</span>
-            </button>
-            <button className="shrink-0 flex items-center gap-1 border border-gray-300 text-gray-600 text-xs font-medium px-4 py-1.5 rounded-full">
-              Fecha de publicacion <span>▾</span>
-            </button>
-            <button className="shrink-0 border border-gray-300 text-gray-600 text-xs font-medium px-4 py-1.5 rounded-full">
-              Solicitud Sencilla
-            </button>
+          {/* Ordenar por */}
+          <div className="flex items-center gap-2 mb-6 flex-wrap sm:flex-nowrap">
+            <label className="text-sm text-gray-600 mr-2">Ordenar por</label>
+            <select
+              value={orderBy}
+              onChange={(e) => {
+                setOrderBy(e.target.value)
+                setPage(0)
+              }}
+              className="border border-gray-300 rounded-full px-3 py-2 text-sm outline-none"
+            >
+              <option value="recientes">Más recientes</option>
+              <option value="antiguos">Más antiguos</option>
+              <option value="nombre">Nombre (A–Z)</option>
+              <option value="actividad">Actividad (A–Z)</option>
+            </select>
           </div>
 
           {/* Área de cards */}
-          {loading ? (
+          {activeTab === "estadisticas" ? (
+            <Stats items={sorted} loading={loading} error={error} />
+          ) : loading ? (
             <p className="text-sm text-gray-400 py-16 text-center">Cargando sistematizaciones...</p>
           ) : error ? (
             <p className="text-sm text-red-500 py-16 text-center">{error}</p>
-          ) : filtered.length === 0 ? (
+          ) : sorted.length === 0 ? (
             <p className="text-sm text-gray-400 py-16 text-center">No hay sistematizaciones disponibles.</p>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <FadeSection className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {paginated.map((it, i) => {
                   const globalIndex = page * PAGE_SIZE + i
                   return (
@@ -155,13 +191,13 @@ export default function Dashboard() {
                     />
                   )
                 })}
-              </div>
+              </FadeSection>
 
               {/* Paginación */}
               {totalPages > 1 && (
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-6 pt-4 border-t border-gray-100 gap-3">
                   <span className="text-xs text-gray-400">
-                    Mostrando {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} de {filtered.length}
+                    Mostrando {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sorted.length)} de {sorted.length}
                   </span>
                   <div className="flex gap-1">
                     <button
