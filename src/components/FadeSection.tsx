@@ -13,22 +13,24 @@ const FadeSection: React.FC<FadeSectionProps> = ({ children, className = "" }) =
   useEffect(() => {
     if (!ref.current) return;
 
+    // Si ya está en el viewport al montar, mostrar inmediatamente
+    const rect = ref.current.getBoundingClientRect();
+    if (rect.top < window.innerHeight) {
+      setVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Cuando la sección entra en el viewport
-          if (entry.isIntersecting) {
-            setVisible(true);
-          } else {
-            setVisible(false);
-          }
+          if (entry.isIntersecting) setVisible(true);
+          else setVisible(false);
         });
       },
-      { threshold: 0.5 } // la sección se considera visible al 50%
+      { threshold: 0.1 }
     );
 
     observer.observe(ref.current);
-
     return () => {
       if (ref.current) observer.unobserve(ref.current);
     };

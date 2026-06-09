@@ -4,6 +4,7 @@ import SistematizacionCard from "../components/Sistematizacioncard"
 import Stats from "../components/Stats"
 import { getSistematizaciones } from "../services/api"
 import FadeSection from "../components/FadeSection"
+import SistematizacionModal from "../components/SistematizacionModal"
 
 
 const PAGE_SIZE = 6
@@ -78,6 +79,8 @@ export default function Dashboard() {
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
   const paginated = sorted.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
+
+  const modalItem = selectedIndex != null ? sorted[selectedIndex] : null
 
   // Reset page when search changes
   function handleSearch(e) {
@@ -178,7 +181,7 @@ export default function Dashboard() {
             <p className="text-sm text-gray-400 py-16 text-center">No hay sistematizaciones disponibles.</p>
           ) : (
             <>
-              <FadeSection className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <FadeSection className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {paginated.map((it, i) => {
                   const globalIndex = page * PAGE_SIZE + i
                   return (
@@ -234,6 +237,9 @@ export default function Dashboard() {
           )}
 
         </div>
+        {modalItem && (
+          <SistematizacionModal item={modalItem} onClose={() => setSelectedIndex(null)} />
+        )}
       </div>
     </div>
   )
