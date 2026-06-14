@@ -15,6 +15,7 @@ const COMMUNITY_COLORS = {
 const KNOWN_FIELDS = new Set([
   "_id", "id", "actividad", "nombre", "comunidad",
   "fecha", "participantes", "horas",
+  "distrito", "poblacion",
   "audiosVideos", "consentimientos", "notas",
 ])
 
@@ -34,7 +35,10 @@ function formatFecha(f) {
   if (!f) return ""
   const d = new Date(f)
   if (isNaN(d)) return f
-  return d.toLocaleDateString("es-CR", { day: "numeric", month: "long", year: "numeric" })
+  const useUTC = typeof f === 'string' && /T.*Z$/.test(f)
+  const options = { day: "numeric", month: "long", year: "numeric" }
+  if (useUTC) options.timeZone = 'UTC'
+  return d.toLocaleDateString("es-CR", options)
 }
 
 // Etiqueta pequeña de sección
@@ -146,6 +150,7 @@ export default function SistematizacionModal({ item = {}, onClose }) {
   const {
     actividad, nombre, comunidad, fecha,
     participantes, horas,
+    distrito, poblacion,
     audiosVideos, consentimientos, notas,
     ...rest
   } = item
@@ -210,6 +215,28 @@ export default function SistematizacionModal({ item = {}, onClose }) {
               <div>
                 <SectionLabel>Comunidad</SectionLabel>
                 <CommunityBadge comunidad={comunidad} />
+              </div>
+            )}
+            {distrito !== undefined && (
+              <div>
+                <SectionLabel>Distrito</SectionLabel>
+                <p className="text-sm text-gray-700">{distrito ? String(distrito) : "Por asignar"}</p>
+              </div>
+            )}
+            {poblacion !== undefined && (
+              <div>
+                <SectionLabel>Población</SectionLabel>
+                {Array.isArray(poblacion) && poblacion.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {poblacion.map((t, i) => (
+                      <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-100">{String(t)}</span>
+                    ))}
+                  </div>
+                ) : (typeof poblacion === 'string' && poblacion ? (
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-100">{poblacion}</span>
+                ) : (
+                  <p className="text-sm text-gray-700">No registrada</p>
+                ))}
               </div>
             )}
           </div>

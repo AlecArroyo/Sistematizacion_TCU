@@ -76,38 +76,48 @@ export default function Step5({ currentStep, totalSteps, onNext, onBack }) {
 
       {hasConsent === true && (
         <div className="mt-4">
-          <p className="text-sm text-gray-600 mb-3">¿Quiénes tienen y cuántos consentimientos tiene cada uno?</p>
+          <div className="bg-sky-50 border border-sky-100 rounded-xl p-3 mb-4">
+            <p className="text-sm text-gray-700">
+              Anota quién tiene los consentimientos firmados y cuántos tiene cada persona, para llevar el control de cuántos faltan recolectar o entregar.
+            </p>
+          </div>
+
           <div className="space-y-3">
             {consents.map((item, idx) => (
-              <div key={idx} className="p-3 border border-gray-200 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <strong className="text-sm font-medium">Persona {idx + 1}</strong>
-                  <button type="button" onClick={() => removePerson(idx)} className="text-red-500 text-sm hover:text-red-600 hover:underline">Eliminar</button>
+              <div key={idx} className="p-4 border border-gray-200 bg-gray-50 rounded-xl">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Registro {idx + 1}</span>
+                  <button type="button" onClick={() => removePerson(idx)} className="text-red-500 text-xs hover:text-red-600 hover:underline">Eliminar</button>
                 </div>
+
+                <label className="block text-xs font-medium text-gray-500 mb-1">Nombre de la persona</label>
                 <input
                   type="text"
-                  placeholder="Nombre de la persona"
+                  placeholder="Ej: María Pérez"
                   value={item.name}
                   onChange={(e) => updatePerson(idx, 'name', e.target.value)}
-                  className="w-full px-3 py-2 mb-2 text-sm border rounded-lg"
+                  className="w-full px-3 py-2 mb-3 text-sm border border-gray-300 rounded-lg bg-white"
                 />
+
+                <label className="block text-xs font-medium text-gray-500 mb-1">Cantidad de consentimientos</label>
                 <input
                   type="text"
-                  placeholder="Cantidad de consentimientos"
+                  placeholder="Ej: 3"
                   value={item.count}
                   onChange={(e) => updatePerson(idx, 'count', e.target.value.replace(/\D/g, ""))}
-                  className="w-full px-3 py-2 text-sm border rounded-lg"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white"
                 />
               </div>
             ))}
           </div>
+
           <div className="mt-3">
             <button
               type="button"
               onClick={addPerson}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-50 text-sky-600 border border-sky-200 hover:bg-sky-100"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-sky-50 text-sky-600 border border-sky-200 hover:bg-sky-100 text-sm font-medium"
             >
-              + Agregar persona
+              + Agregar otra persona
             </button>
           </div>
         </div>

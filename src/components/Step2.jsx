@@ -4,16 +4,18 @@ import FadeSection from "./FadeSection"
 
 export default function Step2({ currentStep, totalSteps, onNext, onBack }) {
   const [comunidad, setComunidad] = useState("")
+  const [distrito, setDistrito] = useState("")
   const [fecha, setFecha] = useState("")
   const [errors, setErrors] = useState({})
 
   function handleNext() {
     const newErrors = {}
     if (!comunidad.trim()) newErrors.comunidad = "Ingresa el nombre de la comunidad."
+    if (!distrito.trim()) newErrors.distrito = "Ingresa el nombre del distrito."
     if (!fecha) newErrors.fecha = "Selecciona la fecha."
     setErrors(newErrors)
     if (Object.keys(newErrors).length) return
-    onNext({ comunidad, fecha })
+    onNext({ comunidad, distrito, fecha })
   }
 
   return (
@@ -44,6 +46,17 @@ export default function Step2({ currentStep, totalSteps, onNext, onBack }) {
           ${errors.comunidad ? "border-red-400" : "border-gray-300"}`}
         />
         {errors.comunidad && <p className="text-red-500 text-xs mt-1">{errors.comunidad}</p>}
+
+        <input
+          type="text"
+          placeholder="Distrito ( opcional )"
+          value={distrito} 
+          onChange={(e) => { setDistrito(e.target.value); setErrors(prev => ({ ...prev, distrito: null })) }}
+          className={`w-full mt-4 px-4 py-2.5 text-sm border rounded-lg outline-none
+          focus:border-sky-400 focus:ring-2 focus:ring-sky-100
+          ${errors.distrito ? "border-red-400" : "border-gray-300"}`}
+        />
+        {errors.distrito && <p className="text-red-500 text-xs mt-1">{errors.distrito}</p>}
 
         <label className="block text-sm font-medium text-gray-700 mt-6 mb-2">Fecha</label>
         <div className="relative">

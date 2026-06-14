@@ -26,8 +26,13 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
     }
 
     if (collected === true) {
-      // validar que cada item tenga título y propietario si existen
-      const bad = media.some(it => !it.title.trim() || !it.owner.trim())
+      // exigir que haya al menos un item y que cada item tenga título y propietario
+      if (media.length === 0) {
+        setErrors("Agrega al menos un audio o video.")
+        return
+      }
+
+      const bad = media.some(it => !it.title || !it.title.trim() || !it.owner || !it.owner.trim())
       if (bad) {
         setErrors("Todos los audios/videos añadidos deben tener título y propietario.")
         return
@@ -37,6 +42,9 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
     // enviar collected y media (puede estar vacío)
     onNext({ collectedMedia: collected, media })
   }
+
+  // derivar estado para deshabilitar el botón Continuar cuando se requiere info y falta
+  const hasIncompleteMedia = collected === true && (media.length === 0 || media.some(it => !it.title || !it.title.trim() || !it.owner || !it.owner.trim()))
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 w-full max-w-lg mx-auto">
@@ -73,36 +81,44 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
 
         {collected === true && (
           <div className="mt-4">
-            <p className="text-sm text-gray-600 mb-3">Agrega los audios/videos (Paso 4.5). Pulsa + para añadir uno nuevo.</p>
+            <div className="bg-sky-50 border border-sky-100 rounded-xl p-3 mb-4">
+              <p className="text-sm text-gray-700">
+                <span className="font-medium">No subas nada aquí.</span> Solo escribe una breve descripción de cada audio/video y el nombre de la persona que lo tiene, para que después lo suba al Drive compartido.
+              </p>
+            </div>
 
             <div className="space-y-3">
               {media.map((item, idx) => (
-                <div key={idx} className="p-3 border border-gray-400 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <strong className="text-sm font-medium">Archivo {idx + 1}</strong>
-                    <button type="button" onClick={() => removeItem(idx)} className="text-red-500 text-sm hover:text-red-600 hover:underline transform transition duration-150">Eliminar</button>
+                <div key={idx} className="p-4 border border-gray-200 bg-gray-50 rounded-xl">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Registro {idx + 1}</span>
+                    <button type="button" onClick={() => removeItem(idx)} className="text-red-500 text-xs hover:text-red-600 hover:underline">Eliminar</button>
                   </div>
+
+                  <label className="block text-xs font-medium text-gray-500 mb-1">¿Qué es?</label>
                   <input
                     type="text"
-                    placeholder="Título del audio/video"
+                    placeholder="Ej: Video entrevista con pescadores"
                     value={item.title}
                     onChange={(e) => updateItem(idx, 'title', e.target.value)}
-                    className="w-full px-3 py-2 mb-2 text-sm border rounded-lg"
+                    className="w-full px-3 py-2 mb-3 text-sm border border-gray-300 rounded-lg bg-white"
                   />
+
+                  <label className="block text-xs font-medium text-gray-500 mb-1">¿Quién lo tiene?</label>
                   <input
                     type="text"
-                    placeholder="Propietario"
+                    placeholder="Ej: María Pérez"
                     value={item.owner}
                     onChange={(e) => updateItem(idx, 'owner', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border rounded-lg"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white"
                   />
                 </div>
               ))}
             </div>
 
             <div className="mt-3">
-              <button type="button" onClick={addItem} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-50 text-sky-600 border border-sky-200 hover:bg-sky-100">
-                + Agregar audio/video
+              <button type="button" onClick={addItem} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-sky-50 text-sky-600 border border-sky-200 hover:bg-sky-100 text-sm font-medium">
+                + Agregar otro audio/video
               </button>
             </div>
           </div>
@@ -115,7 +131,13 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-6">
         <button onClick={onBack} className="text-gray-400 hover:text-gray-600 text-sm font-medium px-4 py-2.5 rounded-full transition">Atrás</button>
-        <button onClick={handleNext} className="bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium px-6 py-2.5 rounded-full transition">Continuar</button>
+        <button
+          onClick={handleNext}
+          disabled={hasIncompleteMedia}
+          className={`bg-sky-500 text-white text-sm font-medium px-6 py-2.5 rounded-full transition ${hasIncompleteMedia ? 'opacity-50 cursor-not-allowed hover:bg-sky-500' : 'hover:bg-sky-600'}`}
+        >
+          Continuar
+        </button>
       </div>
 
     </div>

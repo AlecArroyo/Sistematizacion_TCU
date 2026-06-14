@@ -36,13 +36,21 @@ function StepsForm() {
   }
 
   async function handleSubmit() {
+    const poblacionFromForm = Array.isArray(formData.poblacion)
+      ? formData.poblacion.map(String)
+      : Array.isArray(formData.tipoPoblacion)
+      ? formData.tipoPoblacion.map(String)
+      : (formData.poblacion ? [String(formData.poblacion)] : (formData.tipoPoblacion ? [String(formData.tipoPoblacion)] : []))
+
     const structuredPayload = {
       nombre: formData.nombre || "",
       comunidad: formData.comunidad || "",
       fecha: formData.fecha || "",
+      distrito: formData.distrito || "",
       actividad: formData.actividad || "",
       horas: Number(formData.horas) || 0,
       participantes: Number(formData.participantes) || 0,
+      poblacion: poblacionFromForm,
       audiosVideos: {
         recopilado: Boolean(formData.collectedMedia),
         items: Array.isArray(formData.media)

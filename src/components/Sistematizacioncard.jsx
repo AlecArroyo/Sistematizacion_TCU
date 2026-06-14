@@ -48,11 +48,10 @@ export default function SistematizacionCard({
     const d = new Date(f)
     if (isNaN(d)) return f
 
-    return d.toLocaleDateString("es-CR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
+    const useUTC = typeof f === 'string' && /T.*Z$/.test(f)
+    const options = { day: "numeric", month: "long", year: "numeric" }
+    if (useUTC) options.timeZone = 'UTC'
+    return d.toLocaleDateString("es-CR", options)
   }
 
   return (

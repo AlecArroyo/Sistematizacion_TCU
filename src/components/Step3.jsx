@@ -4,9 +4,19 @@ import FadeSection from "./FadeSection"
 
 export default function Step3({ currentStep, totalSteps, onNext, onBack }) {
   const [actividad, setActividad] = useState("")
+  const [tipoPoblacion, setTipoPoblacion] = useState([])
   const [horas, setHoras] = useState(1)
   const [participantes, setParticipantes] = useState(1)
   const [errors, setErrors] = useState({})
+
+  const TAGS = [
+    "Preescolar",
+    "Primaria",
+    "Secundaria",
+    "Adultos Mayores",
+    "Jovenes",
+    "Adultos",
+  ]
 
   function aumentar() {
     setHoras(prev => (typeof prev === 'number' ? prev + 1 : 1))
@@ -46,11 +56,12 @@ export default function Step3({ currentStep, totalSteps, onNext, onBack }) {
   function handleNext() {
     const newErrors = {}
     if (!actividad.trim()) newErrors.actividad = "Ingresa la actividad realizada."
+    if (!Array.isArray(tipoPoblacion) || tipoPoblacion.length === 0) newErrors.tipoPoblacion = "Selecciona al menos una opción."
     if (horas === "" || Number.isNaN(horas) || parseInt(horas, 10) < 1) newErrors.horas = "Ingresa las horas (entero mayor o igual a 1)."
     if (participantes === "" || Number.isNaN(participantes) || parseInt(participantes, 10) < 1) newErrors.participantes = "Ingresa la cantidad de participantes (entero mayor o igual a 1)."
     setErrors(newErrors)
     if (Object.keys(newErrors).length) return
-    onNext({ actividad, horas, participantes })
+    onNext({ actividad, tipoPoblacion, horas, participantes })
   }
 
   return (
@@ -82,6 +93,32 @@ export default function Step3({ currentStep, totalSteps, onNext, onBack }) {
           ${errors.actividad ? "border-red-400" : "border-gray-300"}`}
         />
         {errors.actividad && <p className="text-red-500 text-xs mt-1">{errors.actividad}</p>}
+
+        <label className="block text-sm font-medium text-gray-700 mt-6 mb-1">¿Con quién se trabajó?</label>
+        <p className="text-xs text-gray-400 mb-2">Selecciona todas las que apliquen</p>
+        <div className={`flex flex-wrap gap-2 mt-1 ${errors.tipoPoblacion ? "border border-red-400 p-2 rounded-lg" : ""}`}>
+          {TAGS.map((tag) => {
+            const selected = tipoPoblacion.includes(tag)
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => {
+                  setTipoPoblacion(prev => {
+                    const exists = prev.includes(tag)
+                    const next = exists ? prev.filter(t => t !== tag) : [...prev, tag]
+                    return next
+                  })
+                  setErrors(prev => ({ ...prev, tipoPoblacion: null }))
+                }}
+                className={`px-3 py-1.5 text-sm rounded-full transition select-none border ${selected ? "bg-sky-500 text-white border-sky-500" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"}`}
+              >
+                {tag}
+              </button>
+            )
+          })}
+        </div>
+        {errors.tipoPoblacion && <p className="text-red-500 text-xs mt-1">{errors.tipoPoblacion}</p>}
 
         <label className="block text-sm font-medium text-gray-700 mt-6 mb-2">Horas</label>
         <div className="flex items-center gap-3">
