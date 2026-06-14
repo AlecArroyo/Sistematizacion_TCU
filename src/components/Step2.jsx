@@ -36,7 +36,7 @@ const DISTRITOS = [
   "Tárcoles",
   "Puerto Jiménez",
   "Orotina"
-]
+].slice().sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }))
 
 export default function Step2({ currentStep, totalSteps, onNext, onBack }) {
   const [comunidad, setComunidad] = useState("")
