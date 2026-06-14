@@ -76,14 +76,34 @@ function AudiosVideosSection({ data }) {
           No se recopiló material audiovisual.
         </div>
       ) : (
-        <ul className="space-y-1">
-          {items.map((it, i) => (
-            <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
-              <CheckCircle size={13} className="text-green-600 mt-0.5 shrink-0" />
-              <span>{it.titulo || it.nombre || it.descripcion || `Ítem ${i + 1}`}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="space-y-2">
+          {items.map((it, i) => {
+            const title = it.titulo || it.nombre || it.descripcion || `Ítem ${i + 1}`
+            const owner = it.quien || it.quienTiene || it.propietario || it.owner || it.responsable || it.usuario || it.encargado || it.persona || 'Desconocido'
+
+            return (
+              <details key={i} className="bg-white border border-gray-100 rounded-lg overflow-hidden">
+                <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer list-none">
+                  <CheckCircle size={13} className="text-green-600 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-800 truncate">{title}</div>
+                    <div className="text-xs text-gray-400 truncate">Por: {owner}</div>
+                  </div>
+                </summary>
+
+                <div className="px-3 pb-3 pt-1 text-sm text-gray-700">
+                  {it.descripcion && <p className="mb-1 text-sm text-gray-700">{it.descripcion}</p>}
+                  {it.archivo && (
+                    <p className="text-sm text-gray-700">Archivo: <span className="font-medium">{it.archivo}</span></p>
+                  )}
+                  {it.url && (
+                    <p className="mt-1"><a href={it.url} target="_blank" rel="noreferrer" className="text-sky-600 underline">Ver archivo</a></p>
+                  )}
+                </div>
+              </details>
+            )
+          })}
+        </div>
       )}
     </SectionBlock>
   )
