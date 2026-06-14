@@ -2,6 +2,42 @@ import { useState } from "react"
 import StepBar from "./StepBar"
 import FadeSection from "./FadeSection"
 
+const DISTRITOS = [
+  "Puntarenas",
+  "Pitahaya",
+  "Chomes",
+  "Lepanto",
+  "Paquera",
+  "Manzanillo",
+  "Guacimal",
+  "Barranca",
+  "Isla del Coco",
+  "Cóbano",
+  "Chacarita",
+  "Chira",
+  "Acapulco",
+  "El Roble",
+  "Espíritu Santo",
+  "Caldera",
+  "Puerto Cortés",
+  "Sierpe",
+  "Bahía Ballena",
+  "Bahía Drake",
+  "Quepos",
+  "Savegre",
+  "Golfito",
+  "Guaycará",
+  "Pavón",
+  "Comte-Burica",
+  "Parrita",
+  "Canoas",
+  "Laurel",
+  "Jacó",
+  "Tárcoles",
+  "Puerto Jiménez",
+  "Orotina"
+]
+
 export default function Step2({ currentStep, totalSteps, onNext, onBack }) {
   const [comunidad, setComunidad] = useState("")
   const [distrito, setDistrito] = useState("")
@@ -48,15 +84,19 @@ export default function Step2({ currentStep, totalSteps, onNext, onBack }) {
         />
         {errors.comunidad && <p className="text-red-500 text-xs mt-1">{errors.comunidad}</p>}
 
-        <input
-          type="text"
-          placeholder="Distrito ( opcional )"
-          value={distrito} 
+        <label className="sr-only">Distrito (opcional)</label>
+        <select
+          value={distrito}
           onChange={(e) => { setDistrito(e.target.value); setErrors(prev => ({ ...prev, distrito: null })) }}
           className={`w-full mt-4 px-4 py-2.5 text-sm border rounded-lg outline-none
           focus:border-sky-400 focus:ring-2 focus:ring-sky-100
-          ${"border-gray-300"}`}
-        />
+          border-gray-300`}
+        >
+          <option value="">Distrito (opcional)</option>
+          {DISTRITOS.map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
 
         <label className="block text-sm font-medium text-gray-700 mt-6 mb-2">Fecha</label>
         <div className="relative">

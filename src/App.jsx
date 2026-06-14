@@ -93,6 +93,14 @@ function StepsForm() {
     setCurrentStep(prev => Math.max(0, prev - 1))
   }
 
+  function handleRestart() {
+    // Reiniciar el formulario para comenzar una nueva sistematización
+    setFormData({})
+    setPayload(null)
+    setSubmitError(null)
+    setCurrentStep(0)
+  }
+
   return (
     <div className="min-h-screen bg-cyan-100 flex items-center font-google justify-center p-4">
       <div className="w-full max-w-4xl absolute top-4 right-4">
@@ -133,7 +141,7 @@ function StepsForm() {
         />
       )}
       {currentStep === 8 && (
-        <Step8 currentStep={currentStep} totalSteps={8} onBack={handleBack} />
+        <Step8 currentStep={currentStep} totalSteps={8} onRestart={handleRestart} />
       )}
     </div>
   )

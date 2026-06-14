@@ -1,7 +1,7 @@
 import StepBar from "./StepBar"
 import FadeSection from "./FadeSection"
 
-export default function Step8({ currentStep, totalSteps, onBack }) {
+export default function Step8({ currentStep, totalSteps, onRestart }) {
   return (
     <div className="bg-white rounded-3xl border border-slate-200 p-8 w-full max-w-md sm:max-w-xl mx-auto shadow-sm">
       <div className="flex items-center gap-3 mb-5">
@@ -23,16 +23,16 @@ export default function Step8({ currentStep, totalSteps, onBack }) {
         <div className="rounded-3xl bg-slate-50 border border-slate-100 p-5 mb-6">
           <p className="text-sm text-slate-700 font-medium">Resumen enviado</p>
           <p className="text-sm text-slate-500 mt-2">
-            Tu información fue enviada y ahora forma parte del registro. Si necesitas revisar algo, puedes regresar al paso anterior.
+            Tu información fue enviada y ahora forma parte del registro.
           </p>
         </div>
 
         <div className="flex items-center justify-end mt-4">
           <button
-            onClick={onBack}
-            className="text-slate-400 text-[14px] font-medium px-2 py-2"
+            onClick={onRestart}
+            className="bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium px-4 py-2 rounded-full"
           >
-            Atrás
+            Registrar otra
           </button>
         </div>
       </FadeSection>

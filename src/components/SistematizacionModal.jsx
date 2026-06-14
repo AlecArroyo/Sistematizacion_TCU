@@ -227,7 +227,7 @@ export default function SistematizacionModal({ item = {}, onClose }) {
           <div className="grid grid-cols-2 gap-4">
             {nombre && (
               <div>
-                <SectionLabel>Nombre</SectionLabel>
+                <SectionLabel>Responsable</SectionLabel>
                 <p className="text-sm text-gray-800">{nombre}</p>
               </div>
             )}

@@ -153,7 +153,12 @@ export default function Step3({ currentStep, totalSteps, onNext, onBack }) {
         </div>
         {errors.horas && <p className="text-red-500 text-xs mt-1">{errors.horas}</p>}
 
-        <label className="block text-sm font-medium text-gray-700 mt-6 mb-2">Participantes</label>
+        <label className="block text-sm font-medium text-gray-700 mt-6 mb-1">
+          Participantes (estudiantes TCU)
+        </label>
+        <p className="text-xs text-gray-400 mb-2">
+          Cantidad de estudiantes del TCU que participaron en la actividad
+        </p>
         <div className="flex items-center gap-3">
           <button
             type="button"
