@@ -17,8 +17,6 @@ const DISTRITOS = [
   "Espíritu Santo",
   "Caldera",
   "Quepos",
-  "Savegre",
-  "Guaycará",
   "Parrita",
   "Jacó",
   "Tárcoles",
@@ -34,11 +32,11 @@ export default function Step2({ currentStep, totalSteps, onNext, onBack }) {
   function handleNext() {
     const newErrors = {}
     if (!comunidad.trim()) newErrors.comunidad = "Ingresa el nombre de la comunidad."
+    if (!distrito.trim()) newErrors.distrito = "Selecciona el distrito."
     if (!fecha) newErrors.fecha = "Selecciona la fecha."
     setErrors(newErrors)
     if (Object.keys(newErrors).length) return
-    // Distrito es opcional; si el usuario no lo puso, enviamos "por asignar"
-    const distritoEnviar = distrito && distrito.trim() ? distrito.trim() : "por asignar"
+    const distritoEnviar = distrito.trim()
     onNext({ comunidad, distrito: distritoEnviar, fecha })
   }
 
@@ -71,19 +69,20 @@ export default function Step2({ currentStep, totalSteps, onNext, onBack }) {
         />
         {errors.comunidad && <p className="text-red-500 text-xs mt-1">{errors.comunidad}</p>}
 
-        <label className="sr-only">Distrito (opcional)</label>
+        <label className="block text-sm font-medium text-gray-700 mt-4 mb-2">Distrito</label>
         <select
           value={distrito}
           onChange={(e) => { setDistrito(e.target.value); setErrors(prev => ({ ...prev, distrito: null })) }}
-          className={`w-full mt-4 px-4 py-2.5 text-sm border rounded-lg outline-none
+          className={`w-full px-4 py-2.5 text-sm border rounded-lg outline-none
           focus:border-sky-400 focus:ring-2 focus:ring-sky-100
-          border-gray-300`}
+          ${errors.distrito ? "border-red-400" : "border-gray-300"}`}
         >
-          <option value="">Distrito (opcional)</option>
+          <option value="">Selecciona el distrito</option>
           {DISTRITOS.map((d) => (
             <option key={d} value={d}>{d}</option>
           ))}
         </select>
+        {errors.distrito && <p className="text-red-500 text-xs mt-1">{errors.distrito}</p>}
 
         <label className="block text-sm font-medium text-gray-700 mt-6 mb-2">Fecha</label>
         <div className="relative">
