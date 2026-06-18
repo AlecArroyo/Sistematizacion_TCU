@@ -82,10 +82,12 @@ export default function Step3({ currentStep, totalSteps, onNext, onBack }) {
           ¿Qué actividad se realizó y cuántas horas?
         </h1>
 
-        <label className="block text-sm font-medium text-gray-700 mb-2">Actividad</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Actividad</label>
+        <p className="text-xs text-gray-400 mb-2">Sé breve y específico</p>
         <input
           type="text"
-          placeholder="Describe la actividad"
+          placeholder="Ej: Entrevistas con pescadores"
+          maxLength={80}
           value={actividad}
           onChange={(e) => { setActividad(e.target.value); setErrors(prev => ({ ...prev, actividad: null })) }}
           className={`w-full px-4 py-2.5 text-sm border rounded-lg outline-none
