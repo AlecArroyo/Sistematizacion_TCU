@@ -60,7 +60,7 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
           Sistematización TCU-782
         </p>
 
-        <h1 className="text-3xl font-normal text-gray-900 mb-4">¿Se recopilaron audios o videos en la gira?</h1>
+        <h1 className="text-3xl font-normal text-gray-900 mb-4">¿Se recopilaron audios, videos o fotos en la gira?</h1>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <button
@@ -83,7 +83,7 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
           <div className="mt-4">
             <div className="bg-sky-50 border border-sky-100 rounded-xl p-3 mb-4">
               <p className="text-sm text-gray-700">
-                <span className="font-medium">No subas nada aquí.</span> Solo escribe una breve descripción de cada audio/video y el nombre de la persona que lo tiene, para que después lo suba al Drive compartido.
+                <span className="font-medium">No subas nada aquí.</span> Solo escribe una breve descripción de cada audio/video/foto y el nombre de la persona que lo tiene, para que después lo suba al Drive compartido.
               </p>
             </div>
 

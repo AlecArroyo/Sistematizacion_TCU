@@ -5,6 +5,7 @@ import Stats from "../components/Stats"
 import { getSistematizaciones } from "../services/api"
 import FadeSection from "../components/FadeSection"
 import SistematizacionModal from "../components/SistematizacionModal"
+import ExcelJS from "exceljs"
 
 
 const PAGE_SIZE = 6
@@ -37,6 +38,146 @@ export default function Dashboard() {
     load()
     return () => (mounted = false)
   }, [])
+
+  // Exportar todas las sistematizaciones a CSV (cada clave de objeto será una columna)
+  // --- Helpers de formateo para columnas con objetos anidados ---
+
+function formatAudiosVideos(val) {
+  if (!val || typeof val !== "object") return val ?? ""
+  if (!val.recopilado) return "No recopilado"
+  if (!Array.isArray(val.items) || val.items.length === 0) return "Recopilado (sin items)"
+  return val.items
+    .map(item => `${item.titulo} (${item.propietario})`)
+    .join("; ")
+}
+
+function formatConsentimientos(val) {
+  if (!val || typeof val !== "object") return val ?? ""
+  if (!val.tiene) return "No tiene consentimientos"
+  if (!Array.isArray(val.personas) || val.personas.length === 0) return "Tiene (sin personas registradas)"
+  return val.personas.join(", ")
+}
+
+function formatArray(val) {
+  if (Array.isArray(val)) return val.join(", ")
+  return val ?? ""
+}
+
+function formatDate(val) {
+  const d = new Date(val)
+  if (isNaN(d.getTime())) return val ?? ""
+  return d.toLocaleDateString("es-CR", { year: "numeric", month: "2-digit", day: "2-digit" })
+}
+
+// --- Exportación a Excel ---
+
+async function handleExportExcel() {
+  if (!items || items.length === 0) {
+    window.alert("No hay sistematizaciones para exportar.")
+    return
+  }
+
+  // Recolectar todas las claves (columnas), excluyendo internas de Mongo
+  const allKeys = []
+  items.forEach(it => {
+    Object.keys(it).forEach(k => {
+      if (!allKeys.includes(k) && k !== "_id" && k !== "__v") allKeys.push(k)
+    })
+  })
+
+  const workbook = new ExcelJS.Workbook()
+  workbook.creator = "TCU-782"
+  workbook.created = new Date()
+
+  const sheet = workbook.addWorksheet("Sistematizaciones", {
+    views: [{ state: "frozen", ySplit: 1 }],
+  })
+
+  sheet.columns = allKeys.map(key => ({
+    header: key.charAt(0).toUpperCase() + key.slice(1),
+    key,
+    width: Math.min(Math.max(key.length + 5, 15), 40),
+  }))
+
+  // Estilo del encabezado
+  sheet.getRow(1).eachCell(cell => {
+    cell.font = { bold: true, color: { argb: "FFFFFFFF" } }
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF15803D" },
+    }
+    cell.alignment = { vertical: "middle", horizontal: "center" }
+    cell.border = {
+      bottom: { style: "thin", color: { argb: "FFCCCCCC" } },
+    }
+  })
+  sheet.getRow(1).height = 22
+
+  // Agregar filas de datos
+  items.forEach((it, i) => {
+    const rowData = {}
+    allKeys.forEach(k => {
+      const val = it[k]
+      const keyLower = k.toLowerCase()
+
+      if (keyLower === "audiosvideos") {
+        rowData[k] = formatAudiosVideos(val)
+      } else if (keyLower === "consentimientos") {
+        rowData[k] = formatConsentimientos(val)
+      } else if (keyLower.includes("fecha")) {
+        rowData[k] = formatDate(val)
+      } else if (Array.isArray(val)) {
+        rowData[k] = formatArray(val)
+      } else if (val && typeof val === "object") {
+        rowData[k] = JSON.stringify(val)
+      } else {
+        rowData[k] = val ?? ""
+      }
+    })
+
+    const row = sheet.addRow(rowData)
+
+    if (i % 2 === 1) {
+      row.eachCell(cell => {
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFF3F4F6" },
+        }
+      })
+    }
+
+    row.eachCell(cell => {
+      cell.alignment = { vertical: "middle", wrapText: true }
+      cell.border = {
+        bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
+      }
+    })
+
+    row.height = 30
+  })
+
+  sheet.autoFilter = {
+    from: { row: 1, column: 1 },
+    to: { row: 1, column: allKeys.length },
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  const date = new Date().toISOString().slice(0, 10)
+  a.download = `sistematizaciones_${date}.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+} // Fin de funcion de excel
+
 
   function handlePrint(item) {
     window.print()
@@ -103,10 +244,18 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="mt-2">
+          <div className="mt-2 flex items-center gap-3">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-sky-600 hover:underline">
               ← Volver al formulario
             </Link>
+
+            <button
+              onClick={handleExportExcel}
+              title="Exportar informe Excel"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 transition"
+            >
+              Exportar informe Excel
+            </button>
           </div>
         </div>
 
@@ -118,11 +267,10 @@ export default function Dashboard() {
             <div className="flex gap-8 flex-wrap">
               <button
                 onClick={() => setActiveTab("sistematizaciones")}
-                className={`text-md font-medium pb-2 transition-all ${
-                  activeTab === "sistematizaciones"
+                className={`text-md font-medium pb-2 transition-all ${activeTab === "sistematizaciones"
                     ? "text-green-700 border-b-2 border-green-700"
                     : "text-gray-400 hover:text-gray-600"
-                }`}
+                  }`}
               >
                 Sistematizaciones
                 <span className="ml-2 bg-gray-100 text-gray-500 text-sm font-semibold px-2 py-0.5 rounded-full">
@@ -131,11 +279,10 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => setActiveTab("estadisticas")}
-                className={`text-md font-medium pb-1 transition-all mx-1.5 ${
-                  activeTab === "estadisticas"
+                className={`text-md font-medium pb-1 transition-all mx-1.5 ${activeTab === "estadisticas"
                     ? "text-green-700 border-b-2 border-green-700"
                     : "text-gray-400 hover:text-gray-600"
-                }`}
+                  }`}
               >
                 Estadísticas
               </button>
@@ -214,11 +361,10 @@ export default function Dashboard() {
                       <button
                         key={idx}
                         onClick={() => setPage(idx)}
-                        className={`w-8 h-8 text-sm rounded-full border transition ${
-                          idx === page
+                        className={`w-8 h-8 text-sm rounded-full border transition ${idx === page
                             ? "bg-green-800 text-white border-green-800"
                             : "border-gray-200 text-gray-500 hover:bg-gray-50"
-                        }`}
+                          }`}
                       >
                         {idx + 1}
                       </button>

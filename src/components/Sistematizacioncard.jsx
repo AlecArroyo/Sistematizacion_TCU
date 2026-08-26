@@ -1,24 +1,42 @@
 import { Printer } from "lucide-react"
 import { printSistematizacion } from "./Printview"
 
-const COMMUNITY_COLORS = {
-  "Isla Venado":  { bg: "#ede9fe", text: "#6d28d9" },
-  "Chomes": { bg: "#d1fae5", text: "#065f46" },
-  "Lepanto": { bg: "#fef9c3", text: "#854d0e" },
-  "Pitaya": { bg: "#fef9c3", text: "#854d0e" },
-  "Paquera": { bg: "#dbeafe", text: "#1e40af" },
+const DISTRICT_COLORS = {
+  "Isla Venado":  { bg: "#ede9fe", text: "#6d28d9" }, // violeta
+  "Chomes": { bg: "#d1fae5", text: "#065f46" },        // esmeralda
+  "Lepanto": { bg: "#fef9c3", text: "#854d0e" },       // amarillo
+  "Pitaya": { bg: "#fef9c3", text: "#854d0e" },        // amarillo
+  "Paquera": { bg: "#dbeafe", text: "#1e40af" },       // azul
+  "Puntarenas": { bg: "#FFC096", text: "#823500" },    // naranja
+  "Barranca": { bg: "#fee2e2", text: "#991b1b" },      // naranja
+
+  // --- Nuevos, para los que faltaban ---
+  "Pitahaya": { bg: "#fef3c7", text: "#92400e" },       // ámbar
+  "Manzanillo": { bg: "#ecfccb", text: "#3f6212" },     // lima
+  "Cóbano": { bg: "#ccfbf1", text: "#115e59" },         // teal
+  "Chacarita": { bg: "#cffafe", text: "#155e75" },      // cyan
+  "Chira": { bg: "#e0f2fe", text: "#075985" },          // sky
+  "El Roble": { bg: "#e0e7ff", text: "#3730a3" },       // índigo
+  "Espíritu Santo": { bg: "#f3e8ff", text: "#6b21a8" }, // púrpura
+  "Caldera": { bg: "#fae8ff", text: "#86198f" },        // fucsia
+  "Quepos": { bg: "#fce7f3", text: "#9d174d" },         // rosado
+  "Parrita": { bg: "#ffe4e6", text: "#9f1239" },        // rose
+  "Jacó": { bg: "#fee2e2", text: "#991b1b" },           // rojo
+  "Tárcoles": { bg: "#ffedd5", text: "#9a3412" },       // naranja claro
+  "Orotina": { bg: "#f5f5f4", text: "#44403c" },        // piedra/gris
+
   default: { bg: "#f3f4f6", text: "#374151" },
 }
 
-function CommunityBadge({ comunidad }) {
-  const colors = COMMUNITY_COLORS[comunidad] ?? COMMUNITY_COLORS.default
+function DistrictBadge({ distrito }) {
+  const colors = DISTRICT_COLORS[distrito] ?? DISTRICT_COLORS.default
 
   return (
     <span
       style={{ backgroundColor: colors.bg, color: colors.text }}
       className="self-start w-fit text-xs font-medium px-4 py-1 rounded-full"
     >
-      {comunidad}
+      {distrito}
     </span>
   )
 }
@@ -31,10 +49,11 @@ export default function SistematizacionCard({
   const {
     actividad = "Sin actividad",
     nombre = "",
-    comunidad = "",
+    distrito = "",
     fecha = "",
     participantes,
     horas,
+    comunidad,
   } = item
 
   function handlePrint(e) {
@@ -96,8 +115,8 @@ export default function SistematizacionCard({
         </p>
       )}
 
-      {/* Comunidad */}
-      {comunidad && <CommunityBadge comunidad={comunidad} />}
+      {/* Distrito (tag) */}
+      {distrito && <DistrictBadge distrito={distrito} />}
 
       {/* Spacer */}
       <div className="flex-1" />
@@ -113,8 +132,13 @@ export default function SistematizacionCard({
         )}
 
         {horas != null && (
-          <span>{horas} Horas</span>
+          <span>{horas} Horas ·</span>
         )}
+         {horas != null && (
+          <span>{comunidad} </span>
+        )}
+               
+
       </div>
     </div>
   )

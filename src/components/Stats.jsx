@@ -21,6 +21,16 @@ export default function Stats({ items = [], loading = false, error = null }) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
 
+  // Distritos: conteo y top (añadido)
+  const districtCounts = items.reduce((acc, it) => {
+    const d = (it.distrito || "Sin distrito").toString().trim()
+    acc[d] = (acc[d] || 0) + 1
+    return acc
+  }, {})
+  const topDistricts = Object.entries(districtCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+
   if (loading) {
     return <p className="text-sm text-gray-400 py-16 text-center">Cargando estadísticas...</p>
   }
@@ -54,26 +64,49 @@ export default function Stats({ items = [], loading = false, error = null }) {
         </div>
       </div>
       
-      {/* Tabla: Comunidades más visitadas */}
+      {/* Tabla: Comunidades y Distritos más visitados */}
       <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-800 mb-2">Comunidades más visitadas</h3>
-        <div className="bg-white rounded-lg border border-gray-100 p-4">
-          <table className="w-full text-sm text-left">
-            <thead>
-              <tr className="text-xs text-gray-500">
-                <th className="py-2">Comunidad</th>
-                <th className="py-2">Visitas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topCommunities.map(([name, count], idx) => (
-                <tr key={name} className="border-t border-gray-50">
-                  <td className="py-2 pr-4">{name}</td>
-                  <td className="py-2 pr-4">{count}</td>
+        <h3 className="text-lg font-medium text-gray-800 mb-2">Comunidades y distritos más visitados</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white rounded-lg border border-gray-100 p-4">
+            <div className="text-sm text-gray-600 font-medium mb-2">Comunidades</div>
+            <table className="w-full text-sm text-left">
+              <thead>
+                <tr className="text-xs text-gray-500">
+                  <th className="py-2">Comunidad</th>
+                  <th className="py-2">Visitas</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {topCommunities.map(([name, count]) => (
+                  <tr key={name} className="border-t border-gray-50">
+                    <td className="py-2 pr-4">{name}</td>
+                    <td className="py-2 pr-4">{count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-100 p-4">
+            <div className="text-sm text-gray-600 font-medium mb-2">Distritos</div>
+            <table className="w-full text-sm text-left">
+              <thead>
+                <tr className="text-xs text-gray-500">
+                  <th className="py-2">Distrito</th>
+                  <th className="py-2">Visitas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topDistricts.map(([name, count]) => (
+                  <tr key={name} className="border-t border-gray-50">
+                    <td className="py-2 pr-4">{name}</td>
+                    <td className="py-2 pr-4">{count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
