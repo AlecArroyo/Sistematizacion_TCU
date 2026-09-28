@@ -1,14 +1,24 @@
 import { useState } from "react"
 import StepBar from "./StepBar"
 import FadeSection from "./FadeSection"
+import useEstudiantes from "../hooks/useEstudiantes"
 
 export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
   const [collected, setCollected] = useState(null) // null, true, false
   const [media, setMedia] = useState([])
   const [errors, setErrors] = useState(null)
+  const { estudiantes, loading } = useEstudiantes()
 
   function addItem() {
-    setMedia(prev => [...prev, { title: "", owner: "" }])
+    setMedia(prev => [...prev, { types: [], owner: "" }])
+  }
+
+  function toggleType(index, type) {
+    setMedia(prev => prev.map((it, i) => {
+      if (i !== index) return it
+      const has = it.types.includes(type)
+      return { ...it, types: has ? it.types.filter(t => t !== type) : [...it.types, type] }
+    }))
   }
 
   function removeItem(index) {
@@ -26,26 +36,29 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
     }
 
     if (collected === true) {
-      // exigir que haya al menos un item y que cada item tenga título y propietario
       if (media.length === 0) {
         setErrors("Agrega al menos un audio o video.")
         return
       }
 
-      const bad = media.some(it => !it.title || !it.title.trim() || !it.owner || !it.owner.trim())
+      const bad = media.some(it => it.types.length === 0 || !it.owner || !it.owner.trim())
       if (bad) {
         setErrors("Todos los audios/videos añadidos deben tener título y propietario.")
         return
       }
     }
 
-    // enviar collected y media (puede estar vacío)
-    onNext({ collectedMedia: collected, media })
+    // convertimos types (array) a title (string) para la base de datos
+    const mediaForDb = media.map(it => ({
+      title: it.types.join(", "),
+      owner: it.owner
+    }))
+
+    onNext({ collectedMedia: collected, media: mediaForDb })
   }
 
   // derivar estado para deshabilitar el botón Continuar cuando se requiere info y falta
-  const hasIncompleteMedia = collected === true && (media.length === 0 || media.some(it => !it.title || !it.title.trim() || !it.owner || !it.owner.trim()))
-
+  const hasIncompleteMedia = collected === true && (media.length === 0 || media.some(it => it.types.length === 0 || !it.owner || !it.owner.trim()))
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 w-full max-w-lg mx-auto">
       <div className="flex items-center gap-4 mb-6">
@@ -83,7 +96,7 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
           <div className="mt-4">
             <div className="bg-sky-50 border border-sky-100 rounded-xl p-3 mb-4">
               <p className="text-sm text-gray-700">
-                <span className="font-medium">No subas nada aquí.</span> Solo escribe una breve descripción de cada audio/video/foto y el nombre de la persona que lo tiene, para que después lo suba al Drive compartido.
+                <span className="font-medium">¡Ya casi terminas!</span> Registra aqui quién tiene fotos, videos o audios de la gira — toma 10 segundos. Luego le avisamos a esa persona para que lo suba al drive y así generar material del TCU (cuentos, videos, etc.).
               </p>
             </div>
 
@@ -95,30 +108,42 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
                     <button type="button" onClick={() => removeItem(idx)} className="text-red-500 text-xs hover:text-red-600 hover:underline">Eliminar</button>
                   </div>
 
-                  <label className="block text-xs font-medium text-gray-500 mb-1">¿Qué es?</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Video entrevista con pescadores"
-                    value={item.title}
-                    onChange={(e) => updateItem(idx, 'title', e.target.value)}
-                    className="w-full px-3 py-2 mb-3 text-sm border border-gray-300 rounded-lg bg-white"
-                  />
+                  <label className="block text-xs font-medium text-gray-500 mb-2">¿Qué es? (podés marcar varios)</label>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {["Foto/s", "Audio/s", "Video/s"].map(type => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => toggleType(idx, type)}
+                        className={`px-3 py-2 sm:py-1.5 rounded-full border text-sm whitespace-nowrap ${item.types.includes(type)
+                          ? 'bg-sky-500 text-white border-sky-500'
+                          : 'text-gray-700 border-gray-300 bg-white hover:bg-gray-50'
+                          }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
 
                   <label className="block text-xs font-medium text-gray-500 mb-1">¿Quién lo tiene?</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: María Pérez"
+                  <select
                     value={item.owner}
                     onChange={(e) => updateItem(idx, 'owner', e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white"
-                  />
+                  >
+                    <option value="">{loading ? "Cargando..." : "Selecciona un estudiante"}</option>
+                    {estudiantes.map(e => {
+                      const nombreCompleto = `${e.nombre} ${e.apellido1} ${e.apellido2}`.replace(/\s+/g, ' ').trim()
+                      return <option key={e.id} value={nombreCompleto}>{nombreCompleto}</option>
+                    })}
+                  </select>
                 </div>
               ))}
             </div>
 
             <div className="mt-3">
               <button type="button" onClick={addItem} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-sky-50 text-sky-600 border border-sky-200 hover:bg-sky-100 text-sm font-medium">
-                + Agregar otro audio/video
+                + Agregar otro registro audio/video
               </button>
             </div>
           </div>

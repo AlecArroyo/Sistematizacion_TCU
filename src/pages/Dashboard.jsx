@@ -51,6 +51,45 @@ function formatAudiosVideos(val) {
     .join("; ")
 }
 
+// Agrega este componente arriba del export default, o en su propio archivo
+function LoadingMessage() {
+  const mensajes = [
+    "Cargando sistematizaciones...",
+    "Despertando a los peces...",
+    "Navegando los manglares..",
+    "Consultando a las tortugas...",
+    "Ordenando los corales...",
+    "Afinando las redes...",
+  ]
+
+  const [index, setIndex] = useState(0)
+  const [seconds, setSeconds] = useState(0)
+
+  useEffect(() => {
+    // Cambia de mensaje cada 2 segundos
+    const messageInterval = setInterval(() => {
+      setIndex(i => (i + 1) % mensajes.length)
+      setSeconds(0) // reinicia el contador cuando cambia el mensaje
+    }, 1000)
+
+    // Cuenta los segundos que lleva ese mensaje visible
+    const secondInterval = setInterval(() => {
+      setSeconds(s => s + 1)
+    }, 600)
+
+    return () => {
+      clearInterval(messageInterval)
+      clearInterval(secondInterval)
+    }
+  }, [])
+
+  return (
+    <p className="text-sm text-gray-400 py-16 text-center">
+      {mensajes[index]}
+    </p>
+  )
+}
+
 function formatConsentimientos(val) {
   if (!val || typeof val !== "object") return val ?? ""
   if (!val.tiene) return "No tiene consentimientos"
@@ -321,7 +360,7 @@ async function handleExportExcel() {
           {activeTab === "estadisticas" ? (
             <Stats items={sorted} loading={loading} error={error} />
           ) : loading ? (
-            <p className="text-sm text-gray-400 py-16 text-center">Cargando sistematizaciones...</p>
+              <LoadingMessage />
           ) : error ? (
             <p className="text-sm text-red-500 py-16 text-center">{error}</p>
           ) : sorted.length === 0 ? (

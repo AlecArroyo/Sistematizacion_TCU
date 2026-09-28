@@ -32,3 +32,9 @@ export const actualizarSistematizacion = async (id, sistematizacion) => {
 export const eliminarSistematizacion = async (id) => {
   await API.delete(`/sistematizacion/${id}`);
 };
+
+// GET - obtener estudiantes
+export const obtenerEstudiantes = async () => {
+  const { data } = await API.get('/estudiantes');
+  return data;
+};

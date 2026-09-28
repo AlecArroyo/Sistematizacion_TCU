@@ -1,11 +1,12 @@
 import { useState } from "react"
 import StepBar from "./StepBar"
-import FadeSection from "./FadeSection";
-
+import FadeSection from "./FadeSection"
+import useEstudiantes from "../hooks/useEstudiantes"
 
 export default function Step1({ currentStep, totalSteps, onNext }) {
   const [nombre, setNombre] = useState("")
   const [error, setError] = useState(false)
+  const { estudiantes, loading } = useEstudiantes()
 
   function handleNext() {
     if (!nombre.trim()) { setError(true); return }
@@ -28,17 +29,20 @@ export default function Step1({ currentStep, totalSteps, onNext }) {
           ¿Quién está registrando esta actividad?
         </h1>
 
-        <input
-          type="text"
-          placeholder="Ingresa tu nombre completo"
+        <select
           value={nombre}
           onChange={(e) => { setNombre(e.target.value); setError(false) }}
           className={`w-full px-4 py-2.5 text-sm border rounded-lg outline-none
           focus:border-sky-400 focus:ring-2 focus:ring-sky-100
           ${error ? "border-red-400" : "border-gray-300"}`}
-        />
-        {error && <p className="text-red-500 text-xs mt-1">Ingresa tu nombre.</p>}
-
+        >
+          <option value="">{loading ? "Cargando..." : "Selecciona tu nombre"}</option>
+          {estudiantes.map(e => {
+            const nombreCompleto = `${e.nombre} ${e.apellido1} ${e.apellido2}`.replace(/\s+/g, ' ').trim()
+            return <option key={e.id} value={nombreCompleto}>{nombreCompleto}</option>
+          })}
+        </select>
+        {error && <p className="text-red-500 text-xs mt-1">Selecciona tu nombre.</p>}
 
       </FadeSection>
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 mt-6">

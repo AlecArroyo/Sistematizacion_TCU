@@ -11,6 +11,7 @@ import Step7 from "./components/Step7"
 import Step8 from "./components/Step8"
 import { crearSistematizacion } from "./services/api"
 import Dashboard from "./pages/Dashboard"
+import useEstudiantes from "./hooks/useEstudiantes"
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
 }
 
 function StepsForm() {
+  useEstudiantes() 
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({})
   const [payload, setPayload] = useState(null)
@@ -143,6 +145,12 @@ function StepsForm() {
       {currentStep === 8 && (
         <Step8 currentStep={currentStep} totalSteps={8} onRestart={handleRestart} />
       )}
+
+            <footer className="absolute bottom-1 w-full text-center my-2">
+        <p className="text-[10px] text-neutral-400 select-none">
+          Sistema desarrollado por Alec Arroyo — Reporte de fallos o mejoras: 8824-1468 · alecfer1204@gmail.com
+        </p>
+      </footer>
     </div>
   )
 }
