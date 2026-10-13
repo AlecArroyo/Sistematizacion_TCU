@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://sistematizacion-web-api.azurewebsites.net/api'
+baseURL: 'https://sistematizacion-web-api.azurewebsites.net/api'
+//   baseURL: 'https://localhost:7099/api'  
 });
 
 // GET - obtener todas
@@ -37,4 +38,5 @@ export const eliminarSistematizacion = async (id) => {
 export const obtenerEstudiantes = async () => {
   const { data } = await API.get('/estudiantes');
   return data;
+
 };

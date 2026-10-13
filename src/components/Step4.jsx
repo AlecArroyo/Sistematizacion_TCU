@@ -10,7 +10,7 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
   const { estudiantes, loading } = useEstudiantes()
 
   function addItem() {
-    setMedia(prev => [...prev, { types: [], owner: "" }])
+    setMedia(prev => [...prev, { types: [], owner: "", ownerId: "" }])
   }
 
   function toggleType(index, type) {
@@ -27,6 +27,17 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
 
   function updateItem(index, field, value) {
     setMedia(prev => prev.map((it, i) => i === index ? { ...it, [field]: value } : it))
+  }
+
+  function selectOwner(index, id) {
+    const e = estudiantes.find(est => est.id === id)
+    const nombreCompleto = e
+      ? `${e.nombre} ${e.apellido1} ${e.apellido2}`.replace(/\s+/g, ' ').trim()
+      : ""
+
+    setMedia(prev => prev.map((it, i) =>
+      i === index ? { ...it, owner: nombreCompleto, ownerId: id } : it
+    ))
   }
 
   function handleNext() {
@@ -51,7 +62,8 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
     // convertimos types (array) a title (string) para la base de datos
     const mediaForDb = media.map(it => ({
       title: it.types.join(", "),
-      owner: it.owner
+      owner: it.owner,
+      ownerId: it.ownerId
     }))
 
     onNext({ collectedMedia: collected, media: mediaForDb })
@@ -110,7 +122,7 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
 
                   <label className="block text-xs font-medium text-gray-500 mb-2">¿Qué es? (podés marcar varios)</label>
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {["Foto/s", "Audio/s", "Video/s"].map(type => (
+                    {["Foto(s)", "Audio(s)", "Video(s)"].map(type => (
                       <button
                         key={type}
                         type="button"
@@ -127,14 +139,14 @@ export default function Step4({ currentStep, totalSteps, onNext, onBack }) {
 
                   <label className="block text-xs font-medium text-gray-500 mb-1">¿Quién lo tiene?</label>
                   <select
-                    value={item.owner}
-                    onChange={(e) => updateItem(idx, 'owner', e.target.value)}
+                    value={item.ownerId}
+                    onChange={(e) => selectOwner(idx, e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white"
                   >
                     <option value="">{loading ? "Cargando..." : "Selecciona un estudiante"}</option>
                     {estudiantes.map(e => {
                       const nombreCompleto = `${e.nombre} ${e.apellido1} ${e.apellido2}`.replace(/\s+/g, ' ').trim()
-                      return <option key={e.id} value={nombreCompleto}>{nombreCompleto}</option>
+                      return <option key={e.id} value={e.id}>{nombreCompleto}</option>
                     })}
                   </select>
                 </div>

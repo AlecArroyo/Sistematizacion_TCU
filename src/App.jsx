@@ -58,7 +58,8 @@ function StepsForm() {
         items: Array.isArray(formData.media)
           ? formData.media.map(item => ({
               titulo: item.title || "",
-              propietario: item.owner || ""
+              propietario: item.owner || "",
+              propietarioId: item.ownerId || null   // <- nuevo
             }))
           : []
       },
